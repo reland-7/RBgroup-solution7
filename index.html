@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventari — Firmë Ndërtimi</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;
+  --s1:#161c26;
+  --s2:#1e2736;
+  --s3:#242f42;
+  --border:rgba(255,255,255,0.07);
+  --text:#e8edf5;
+  --muted:#7a8ba8;
+  --orange:#f97316;
+  --yellow:#eab308;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --cyan:#06b6d4;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--s1);border-right:1px solid var(--border);z-index:100;display:flex;flex-direction:column;padding:0}
+.logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.08em;color:var(--orange);line-height:1}
+.logo-sub{font-size:0.65rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:2px}
+.nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:0.82rem;font-weight:500;color:var(--muted);transition:all 0.2s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--s2);color:var(--text)}
+.nav-item.active{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.2)}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--orange);color:#fff;font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:99px}
+
+/* MAIN */
+.main{margin-left:220px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.06em;color:var(--text)}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.btn{padding:8px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;letter-spacing:0.02em}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#ea6c0a;transform:translateY(-1px)}
+.btn-ghost{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.15)}
+
+.content{padding:24px 28px;flex:1}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.stat-card.orange::after{background:var(--orange)}
+.stat-card.green::after{background:var(--green)}
+.stat-card.yellow::after{background:var(--yellow)}
+.stat-card.red::after{background:var(--red)}
+.stat-card.blue::after{background:var(--blue)}
+.stat-label{font-size:0.68rem;font-weight:600;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
+.stat-value{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:600;color:var(--text)}
+.stat-sub{font-size:0.72rem;color:var(--muted);margin-top:4px}
+.stat-icon{position:absolute;top:16px;right:16px;font-size:1.5rem;opacity:0.15}
+
+/* TABLE */
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.table-title{font-size:0.9rem;font-weight:700;color:var(--text)}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px}
+.search-box input{background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;width:180px}
+.search-box input::placeholder{color:var(--muted)}
+
+.table-wrap{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--s2);padding:11px 16px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s;animation:fadeUp 0.3s ease both}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--s2)}
+tbody td{padding:12px 16px;font-size:0.82rem;color:var(--text)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:0.78rem}
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:0.65rem;font-weight:700;letter-spacing:0.06em}
+.badge-green{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.badge-yellow{background:rgba(234,179,8,0.12);color:var(--yellow);border:1px solid rgba(234,179,8,0.2)}
+.badge-red{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.badge-blue{background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+.badge-orange{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.2)}
+
+.action-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:0.72rem;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.action-btn:hover{border-color:var(--orange);color:var(--orange)}
+.action-btn.del:hover{border-color:var(--red);color:var(--red)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:18px;width:520px;max-width:95vw;padding:28px;animation:modalIn 0.25s ease}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.06em;margin-bottom:20px;color:var(--orange)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
+.field input,.field select,.field textarea{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;transition:border-color 0.2s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange)}
+.field select option{background:var(--s2)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* PROGRESS BAR */
+.prog-track{background:rgba(255,255,255,0.06);border-radius:99px;height:5px;margin-top:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1)}
+
+/* ALERT ROWS */
+.alert-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.alert-item{display:flex;align-items:center;gap:14px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:12px;padding:14px 18px}
+.alert-item.warn{background:rgba(234,179,8,0.06);border-color:rgba(234,179,8,0.15)}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.alert-dot.red{background:var(--red)}
+.alert-dot.warn{background:var(--yellow)}
+.alert-text{font-size:0.82rem;flex:1}
+.alert-name{font-weight:700;color:var(--text)}
+.alert-sub{color:var(--muted);font-size:0.75rem}
+
+/* SECTION DIVIDER */
+.section-label{font-size:0.68rem;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* FURNITOR CARDS */
+.furnitor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+.furnitor-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both}
+.furnitor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.f0::before{background:linear-gradient(90deg,#f97316,#eab308)}
+.f1::before{background:linear-gradient(90deg,#3b82f6,#06b6d4)}
+.f2::before{background:linear-gradient(90deg,#22c55e,#06b6d4)}
+.f3::before{background:linear-gradient(90deg,#a855f7,#ec4899)}
+.f4::before{background:linear-gradient(90deg,#ef4444,#f97316)}
+.f-name{font-weight:700;font-size:0.92rem;margin-bottom:2px}
+.f-nid{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);margin-bottom:12px}
+.f-row{display:flex;justify-content:space-between;align-items:center;font-size:0.76rem;margin-bottom:6px}
+.f-row-label{color:var(--muted)}
+.f-row-val{font-family:'JetBrains Mono',monospace;font-weight:600}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:20px}
+.tab{padding:7px 16px;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.tab.active{background:var(--orange);color:#fff}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:0.4}
+
+/* BACKUP AREA */
+.backup-area{padding:10px 12px 16px;border-top:1px solid var(--border)}
+
+/* BILANCI */
+.bil-tatim-box{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:4px}
+.bil-tatim-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative}
+.bil-tatim-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 12px 12px;background:var(--orange)}
+.bil-tatim-card.green::after{background:var(--green)}
+.bil-tatim-card.red::after{background:var(--red)}
+.bil-tc-label{font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.bil-tc-val{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:600;color:var(--text)}
+.bil-tc-sub{font-size:0.68rem;color:var(--muted);margin-top:4px}
+.backup-status{font-size:0.65rem;color:var(--green);margin-bottom:8px;padding:0 4px;opacity:0.8}
+.backup-status.saving{color:var(--yellow)}
+.backup-btn{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-weight:500;color:var(--muted);border:1px solid var(--border);background:var(--s2);width:100%;text-align:left;margin-bottom:4px;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.backup-btn:hover{border-color:var(--orange);color:var(--orange)}
+.backup-btn-subj{border-style:dashed;color:var(--cyan)}
+.backup-btn-subj:hover{border-color:var(--cyan) !important;color:var(--cyan) !important}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:0.82rem;color:var(--text);z-index:999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:toastIn 0.3s ease;pointer-events:none}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+
+/* SUBJECT SWITCHER */
+.subject-area{padding:10px 12px;border-bottom:1px solid var(--border)}
+.subject-section-label{font-size:0.6rem;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;padding:0 4px}
+.subject-list{display:flex;flex-direction:column;gap:2px}
+.subject-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:0.78rem;font-weight:600;color:var(--muted);transition:all 0.2s;border:1px solid transparent;background:none;width:100%;text-align:left}
+.subject-btn:hover{background:var(--s2);color:var(--text)}
+.subject-btn.active{background:rgba(249,115,22,0.1);color:var(--orange);border-color:rgba(249,115,22,0.25)}
+.subject-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.subject-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subject-del{opacity:0;font-size:0.7rem;padding:1px 4px;border-radius:4px;background:rgba(239,68,68,0.15);color:var(--red);border:none;cursor:pointer;transition:opacity 0.2s}
+.subject-btn:hover .subject-del{opacity:1}
+.subject-add-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:0.75rem;color:var(--muted);border:1px dashed var(--border);background:none;width:100%;text-align:left;margin-top:4px;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.subject-add-btn:hover{border-color:var(--orange);color:var(--orange)}
+
+/* SUBJECT TOPBAR INDICATOR */
+.subject-indicator{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:600;color:var(--text)}
+.subject-indicator-dot{width:8px;height:8px;border-radius:50%}
+
+/* COLOR PICKER */
+.color-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.color-opt{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.15s}
+.color-opt:hover{transform:scale(1.1)}
+.color-opt.sel{border-color:#fff;transform:scale(1.15)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-title">🏗️ BuildTrack</div>
+    <div class="logo-sub">Sistem Inventari</div>
+  </div>
+
+  <!-- SUBJECT SWITCHER -->
+  <div class="subject-area">
+    <div class="subject-section-label">📁 Subjektet</div>
+    <div class="subject-list" id="subject-list"></div>
+    <button class="subject-add-btn" onclick="openSubjectModal()">＋ Shto Subjekt</button>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-item active" onclick="showPanel('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+    <button class="nav-item" onclick="showPanel('materiale')"><span class="nav-icon">🧱</span> Materiale <span class="nav-badge" id="badge-mat">0</span></button>
+    <button class="nav-item" onclick="showPanel('pajisje')"><span class="nav-icon">⚙️</span> Pajisje & Mjete</button>
+    <button class="nav-item" onclick="showPanel('shitje')"><span class="nav-icon">💰</span> Shitje & Stok</button>
+    <button class="nav-item" onclick="showPanel('furnitoret')"><span class="nav-icon">🚛</span> Furnitorët</button>
+    <button class="nav-item" onclick="showPanel('bilanci')"><span class="nav-icon">📑</span> Bilanci & Tatimi</button>
+    <button class="nav-item" onclick="showPanel('hr')"><span class="nav-icon">👷</span> Paga & HR</button>
+  </nav>
+
+  <!-- BACKUP AREA -->
+  <div class="backup-area">
+    <div class="subject-section-label">💾 Ruajtja & Backup</div>
+    <div class="backup-status" id="backup-status">✅ Ruajtur automatikisht</div>
+    <button class="backup-btn" onclick="exportBackup()">📤 Shkarko Të Gjitha</button>
+    <button class="backup-btn" onclick="document.getElementById('import-file').click()">📥 Ngarko Backup</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBackup(event)">
+    <button class="backup-btn backup-btn-subj" onclick="exportCurrentSubject()">📋 Shkarko Subjektin Aktual</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-actions">
+      <div class="subject-indicator"><div class="subject-indicator-dot" id="subj-dot"></div><span id="subj-name-top">—</span></div>
+      <button class="btn btn-ghost" onclick="exportCSV()">📥 Eksporto CSV</button>
+      <button class="btn btn-primary" id="btn-add" onclick="openModal()">＋ Shto të Re</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-row">
+        <div class="stat-card orange" style="animation-delay:0s">
+          <div class="stat-icon">🧱</div>
+          <div class="stat-label">Artikuj Aktiv</div>
+          <div class="stat-value" id="d-artikuj">0</div>
+          <div class="stat-sub">Materiale + Pajisje</div>
+        </div>
+        <div class="stat-card green" style="animation-delay:0.05s">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">Vlera Totale Stokut</div>
+          <div class="stat-value" id="d-vlera">0 L</div>
+          <div class="stat-sub">Çmimi blerje × sasia</div>
+        </div>
+        <div class="stat-card yellow" style="animation-delay:0.1s">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-label">Stok i Ulët</div>
+          <div class="stat-value" id="d-ulët">0</div>
+          <div class="stat-sub">Nën nivelin minimal</div>
+        </div>
+        <div class="stat-card red" style="animation-delay:0.15s">
+          <div class="stat-icon">🚛</div>
+          <div class="stat-label">Furnitorë Aktiv</div>
+          <div class="stat-value" id="d-furnitorë">0</div>
+          <div class="stat-sub">Partner aktualë</div>
+        </div>
+      </div>
+
+      <div class="section-label">⚠️ Alarme Stoku</div>
+      <div id="alert-list" class="alert-list"></div>
+
+      <div class="section-label">📋 Lëvizjet e Fundit</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Artikull</th><th>Kategori</th><th>Sasia</th><th>Vlera</th><th>Statusi</th></tr></thead>
+          <tbody id="dash-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ MATERIALE ═══ -->
+    <div class="panel" id="panel-materiale">
+      <div class="tabs">
+        <button class="tab active" onclick="filterMat('all',this)">Të Gjitha</button>
+        <button class="tab" onclick="filterMat('Betoni & Strukturë',this)">Betoni</button>
+        <button class="tab" onclick="filterMat('Çelik & Metal',this)">Çelik</button>
+        <button class="tab" onclick="filterMat('Elektrik',this)">Elektrik</button>
+        <button class="tab" onclick="filterMat('Hidraulikë',this)">Hidraulikë</button>
+        <button class="tab" onclick="filterMat('Tjetër',this)">Tjetër</button>
+      </div>
+      <div class="table-header">
+        <span class="table-title">📦 Lista e Materialeve</span>
+        <div class="search-box">🔍 <input type="text" placeholder="Kërko material..." oninput="searchTable('mat-tbody',this.value)"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Emri Materialit</th><th>Kategori</th><th>Njësia</th><th>Sasia</th><th>Min</th><th>Çmimi Blerje</th><th>Çmimi Shitje</th><th>Furnitori</th><th>Statusi</th><th>Veprime</th></tr></thead>
+          <tbody id="mat-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ PAJISJE ═══ -->
+    <div class="panel" id="panel-pajisje">
+      <div class="table-header">
+        <span class="table-title">⚙️ Pajisje & Mjete</span>
+        <div class="search-box">🔍 <input type="text" placeholder="Kërko pajisje..." oninput="searchTable('paj-tbody',this.value)"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Emri</th><th>Kategori</th><th>Seria/Kodi</th><th>Gjendja</th><th>Vlera Blerjes</th><th>Mirëmbajtja Radhës</th><th>Lokacioni</th><th>Statusi</th><th>Veprime</th></tr></thead>
+          <tbody id="paj-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ SHITJE ═══ -->
+    <div class="panel" id="panel-shitje">
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card green"><div class="stat-icon">📈</div><div class="stat-label">Shitje Totale</div><div class="stat-value" id="sh-total">0 L</div><div class="stat-sub">Gjithsej</div></div>
+        <div class="stat-card blue"><div class="stat-icon">🔄</div><div class="stat-label">Transaksione</div><div class="stat-value" id="sh-count">0</div><div class="stat-sub">Regjistrime</div></div>
+        <div class="stat-card orange"><div class="stat-icon">💹</div><div class="stat-label">Fitimi Mesatar</div><div class="stat-value" id="sh-profit">0%</div><div class="stat-sub">Marzhi</div></div>
+      </div>
+      <div class="table-header">
+        <span class="table-title">💰 Regjistri i Shitjeve & Stokut</span>
+        <div class="search-box">🔍 <input type="text" placeholder="Kërko..." oninput="searchTable('sh-tbody',this.value)"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Data</th><th>Artikull</th><th>Lloji</th><th>Sasia</th><th>Çmimi Unit</th><th>Vlera Totale</th><th>Klienti/Shënim</th><th>Veprime</th></tr></thead>
+          <tbody id="sh-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ FURNITORET ═══ -->
+    <div class="panel" id="panel-furnitoret">
+      <div class="furnitor-grid" id="furnitor-grid"></div>
+      <div class="section-label">📋 Lista e Furnitorëve</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Emri</th><th>NID</th><th>Kontakti</th><th>Adresa</th><th>Materialet</th><th>Afati Pageses</th><th>Statusi</th><th>Veprime</th></tr></thead>
+          <tbody id="fur-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ BILANCI & TATIMI ═══ -->
+    <div class="panel" id="panel-bilanci">
+
+      <!-- YEAR/MONTH FILTER -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="tabs" style="margin-bottom:0">
+          <button class="tab active" onclick="setBilPeriod('vit',this)">Vjetor</button>
+          <button class="tab" onclick="setBilPeriod('muaj',this)">Mujor</button>
+        </div>
+        <select id="bil-year" onchange="renderBilanci()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none"></select>
+        <select id="bil-month" onchange="renderBilanci()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none;display:none">
+          <option value="01">Janar</option><option value="02">Shkurt</option><option value="03">Mars</option>
+          <option value="04">Prill</option><option value="05">Maj</option><option value="06">Qershor</option>
+          <option value="07">Korrik</option><option value="08">Gusht</option><option value="09">Shtator</option>
+          <option value="10">Tetor</option><option value="11">Nëntor</option><option value="12">Dhjetor</option>
+        </select>
+        <button class="btn btn-ghost" onclick="exportBilanciPDF()" style="margin-left:auto">📄 Eksporto Raport</button>
+        <button class="btn btn-primary" onclick="openModal('shpenzim')">＋ Shto Shpenzim</button>
+      </div>
+
+      <!-- STATS ROW -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card green"><div class="stat-icon">📈</div><div class="stat-label">Të Ardhura Bruto</div><div class="stat-value" id="bil-ardhura">0 L</div><div class="stat-sub">Nga shitjet</div></div>
+        <div class="stat-card red"><div class="stat-icon">📉</div><div class="stat-label">Shpenzime Totale</div><div class="stat-value" id="bil-shpenzime">0 L</div><div class="stat-sub">Blerje + Operative</div></div>
+        <div class="stat-card orange"><div class="stat-icon">💹</div><div class="stat-label">Fitimi Para Tatimit</div><div class="stat-value" id="bil-fitim-para">0 L</div><div class="stat-sub">Bruto - Shpenzime</div></div>
+        <div class="stat-card blue"><div class="stat-icon">🏦</div><div class="stat-label">Fitimi Neto</div><div class="stat-value" id="bil-fitim-neto">0 L</div><div class="stat-sub">Pas tatimit</div></div>
+      </div>
+
+      <!-- TATIMI ROW -->
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-top:0">
+        <div class="stat-card yellow"><div class="stat-icon">🧾</div><div class="stat-label">TVSH e Mbledhur (20%)</div><div class="stat-value" id="bil-tvsh-mbj">0 L</div><div class="stat-sub">Nga shitjet me TVSH</div></div>
+        <div class="stat-card yellow"><div class="stat-icon">🔄</div><div class="stat-label">TVSH e Zbritshme</div><div class="stat-value" id="bil-tvsh-zbr">0 L</div><div class="stat-sub">Nga blerjet me TVSH</div></div>
+        <div class="stat-card red"><div class="stat-icon">💸</div><div class="stat-label">TVSH për Pagesë</div><div class="stat-value" id="bil-tvsh-net">0 L</div><div class="stat-sub">Detyrim ndaj tatimit</div></div>
+      </div>
+
+      <!-- TATIM FITIMI -->
+      <div class="section-label">🏛️ Detyrimet Tatimore</div>
+      <div id="bil-tatim-box" class="bil-tatim-box"></div>
+
+      <!-- GRAFIKU MUJOR -->
+      <div class="section-label">📊 Grafiku i Të Ardhurave & Shpenzimeve</div>
+      <div class="table-wrap" style="padding:20px 24px">
+        <canvas id="bil-chart" height="80"></canvas>
+      </div>
+
+      <!-- SHPENZIME OPERATIVE -->
+      <div class="section-label" style="margin-top:24px">📋 Shpenzime Operative</div>
+      <div class="table-header">
+        <span class="table-title">Lista e Shpenzimeve</span>
+        <div class="search-box">🔍 <input type="text" placeholder="Kërko..." oninput="searchTable('shp-tbody',this.value)"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Vlera</th><th>TVSH</th><th>Total me TVSH</th><th>Veprime</th></tr></thead>
+          <tbody id="shp-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ═══ PAGA & HR ═══ -->
+    <div class="panel" id="panel-hr">
+
+      <!-- FILTER ROW -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="tabs" style="margin-bottom:0">
+          <button class="tab active" onclick="setHrView('punonjes',this)">Punonjësit</button>
+          <button class="tab" onclick="setHrView('paga',this)">Rregjistri Pagave</button>
+          <button class="tab" onclick="setHrView('shpenzime',this)">Shpenzime të Tjera</button>
+        </div>
+        <select id="hr-year" onchange="renderHR()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none"></select>
+        <select id="hr-month" onchange="renderHR()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.8rem;outline:none">
+          <option value="all">Të gjitha muajt</option>
+          <option value="01">Janar</option><option value="02">Shkurt</option><option value="03">Mars</option>
+          <option value="04">Prill</option><option value="05">Maj</option><option value="06">Qershor</option>
+          <option value="07">Korrik</option><option value="08">Gusht</option><option value="09">Shtator</option>
+          <option value="10">Tetor</option><option value="11">Nëntor</option><option value="12">Dhjetor</option>
+        </select>
+        <button class="btn btn-primary" id="hr-btn-add" onclick="openHRModal()" style="margin-left:auto">＋ Shto</button>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr)" id="hr-stats-row">
+        <div class="stat-card blue"><div class="stat-icon">👷</div><div class="stat-label">Punonjës Aktiv</div><div class="stat-value" id="hr-total-pun">0</div><div class="stat-sub">Stafi aktual</div></div>
+        <div class="stat-card red"><div class="stat-icon">💵</div><div class="stat-label">Paga Totale (Muaji)</div><div class="stat-value" id="hr-total-paga">0 L</div><div class="stat-sub">Bruto + Kontribute</div></div>
+        <div class="stat-card orange"><div class="stat-icon">🏛️</div><div class="stat-label">Kontribute Shoq.</div><div class="stat-value" id="hr-kontribute">0 L</div><div class="stat-sub">Punëdhënës (16.7%)</div></div>
+        <div class="stat-card yellow"><div class="stat-icon">📋</div><div class="stat-label">Shp. të Tjera</div><div class="stat-value" id="hr-shp-tjera">0 L</div><div class="stat-sub">Periudha e zgjedhur</div></div>
+      </div>
+
+      <!-- PUNONJESIT VIEW -->
+      <div id="hr-view-punonjes">
+        <div class="section-label">👷 Lista e Punonjësve</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Emri & Mbiemri</th><th>Pozicioni</th><th>Data Fillimit</th><th>Paga Bruto</th><th>Kontribute (16.7%)</th><th>Paga Neto</th><th>Statusi</th><th>Veprime</th></tr></thead>
+            <tbody id="hr-pun-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGA VIEW -->
+      <div id="hr-view-paga" style="display:none">
+        <div class="section-label">💵 Regjistri i Pagave</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Muaji</th><th>Punonjësi</th><th>Paga Bruto</th><th>Tatim Mbi të Ardhura</th><th>Kontribute</th><th>Paga Neto</th><th>Statusi</th><th>Veprime</th></tr></thead>
+            <tbody id="hr-paga-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SHPENZIME TË TJERA VIEW -->
+      <div id="hr-view-shpenzime" style="display:none">
+        <div class="section-label">📋 Shpenzime të Tjera Operative</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Vlera</th><th>TVSH (20%)</th><th>Total</th><th>Veprime</th></tr></thead>
+            <tbody id="hr-shp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-box">
+    <div class="modal-title" id="modal-title">Shto Material</div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Anulo</button>
+      <button class="btn btn-primary" onclick="saveItem()">💾 Ruaj</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SUBJECT MODAL ═══ -->
+<div class="modal-overlay" id="subj-modal-overlay" onclick="if(event.target===this)closeSubjectModal()">
+  <div class="modal" style="width:400px">
+    <div class="modal-title" id="subj-modal-title">➕ Shto Subjekt</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="field">
+        <label>Emri Subjektit / Kompanisë</label>
+        <input id="subj-emri" placeholder="p.sh. AlbBuild SHPK...">
+      </div>
+      <div class="field">
+        <label>Ngjyra</label>
+        <div class="color-picker" id="color-picker"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeSubjectModal()">Anulo</button>
+      <button class="btn btn-primary" onclick="saveSubject()">💾 Ruaj</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// MULTI-SUBJECT SYSTEM
+// ═══════════════════════════════════════════════
+const COLORS = ['#f97316','#3b82f6','#22c55e','#a855f7','#ef4444','#06b6d4','#eab308','#ec4899'];
+let selectedColor = COLORS[0];
+
+const defaultData = () => ({
+  materiale: [
+    {id:1,emri:"Çimento Portland 42.5N",kategori:"Betoni & Strukturë",njesia:"Thes (50kg)",sasia:320,min:50,cmBlerje:850,cmShitje:1050,furnitori:"TITAN Cement Albania",status:"Stok Normal"},
+    {id:2,emri:"Zhavorr 0-4mm",kategori:"Betoni & Strukturë",njesia:"Ton",sasia:45,min:20,cmBlerje:3200,cmShitje:4000,furnitori:"Guri Alb SHPK",status:"Stok Normal"},
+    {id:3,emri:"Hekur Armature Ø12",kategori:"Çelik & Metal",njesia:"Ton",sasia:8.5,min:5,cmBlerje:92000,cmShitje:110000,furnitori:"KROMAÇEL SHPK",status:"Stok i Ulët"},
+    {id:4,emri:"Hekur Armature Ø16",kategori:"Çelik & Metal",njesia:"Ton",sasia:3.2,min:4,cmBlerje:95000,cmShitje:115000,furnitori:"KROMAÇEL SHPK",status:"Stok Kritik"},
+    {id:5,emri:"Tulla e zakonshme 25x12x6",kategori:"Muratim",njesia:"Copë (1000)",sasia:180,min:50,cmBlerje:28000,cmShitje:35000,furnitori:"Tullat Tirana",status:"Stok Normal"},
+    {id:6,emri:"Kabllo NYY 3x2.5",kategori:"Elektrik",njesia:"Metër",sasia:1200,min:500,cmBlerje:320,cmShitje:420,furnitori:"Electro Alba",status:"Stok Normal"},
+    {id:7,emri:"Kabllo NYY 3x6",kategori:"Elektrik",njesia:"Metër",sasia:380,min:300,cmBlerje:580,cmShitje:750,furnitori:"Electro Alba",status:"Stok i Ulët"},
+    {id:8,emri:"Tub PVC Ø110 (zjarrëzike)",kategori:"Hidraulikë",njesia:"Metër",sasia:250,min:100,cmBlerje:480,cmShitje:620,furnitori:"Hidro System",status:"Stok Normal"},
+    {id:9,emri:"Tub PPR Ø32",kategori:"Hidraulikë",njesia:"Metër",sasia:90,min:100,cmBlerje:220,cmShitje:290,furnitori:"Hidro System",status:"Stok Kritik"},
+    {id:10,emri:"Gëlqere hidraulike",kategori:"Betoni & Strukturë",njesia:"Thes (25kg)",sasia:220,min:60,cmBlerje:450,cmShitje:580,furnitori:"TITAN Cement Albania",status:"Stok Normal"},
+    {id:11,emri:"Izolim termik EPS 5cm",kategori:"Izolim",njesia:"m²",sasia:650,min:200,cmBlerje:380,cmShitje:500,furnitori:"IzoAlb SHPK",status:"Stok Normal"},
+    {id:12,emri:"Shina gipsi 60/27",kategori:"Tjetër",njesia:"Metër",sasia:800,min:400,cmBlerje:180,cmShitje:240,furnitori:"Gyproc Albania",status:"Stok Normal"},
+  ],
+  pajisje: [
+    {id:1,emri:"Betonierë 350L",kategori:"Makina",seria:"BET-350-2022",gjendja:"Shumë Mirë",vlera:850000,mirembajtja:"2025-06-01",lokacioni:"Kantieri Qendër",status:"Aktive"},
+    {id:2,emri:"Grilë Këndi 115mm",kategori:"Mjete Dore",seria:"GK-115-A",gjendja:"Mirë",vlera:18000,mirembajtja:"2025-03-15",lokacioni:"Depo Kryesore",status:"Aktive"},
+    {id:3,emri:"Vinç Torre 5t",kategori:"Makina të Rënda",seria:"VT-500-2020",gjendja:"Mirë",vlera:12500000,mirembajtja:"2025-04-20",lokacioni:"Kantieri Liqeni",status:"Aktive"},
+    {id:4,emri:"Gjenerator 15KVA",kategori:"Elektrike",seria:"GEN-15K-21",gjendja:"Mirë",vlera:950000,mirembajtja:"2025-05-10",lokacioni:"Depo Kryesore",status:"Aktive"},
+    {id:5,emri:"Dhëmb elektrik Bosch",kategori:"Mjete Dore",seria:"GSB-21-2RE",gjendja:"Mirë",vlera:32000,mirembajtja:"—",lokacioni:"Depo Kryesore",status:"Aktive"},
+    {id:6,emri:"Pompë uji 3' ",kategori:"Elektrike",seria:"PU-3IN-19",gjendja:"Nevojitet Riparim",vlera:65000,mirembajtja:"2025-02-28",lokacioni:"Kantieri Qendër",status:"Riparim"},
+    {id:7,emri:"Rrafshues betoni Wacker",kategori:"Makina",seria:"WK-BS45-23",gjendja:"Shumë Mirë",vlera:420000,mirembajtja:"2025-07-01",lokacioni:"Kantieri Liqeni",status:"Aktive"},
+    {id:8,emri:"Skela metalike 200m²",kategori:"Skela",seria:"SK-META-18",gjendja:"Mirë",vlera:1800000,mirembajtja:"—",lokacioni:"Kantieri Qendër",status:"Aktive"},
+  ],
+  shitje: [
+    {id:1,data:"2025-01-15",artikull:"Çimento Portland 42.5N",lloji:"Shitje",sasia:50,cmUnit:1050,total:52500,klienti:"Konstruksion Alba SHPK"},
+    {id:2,data:"2025-01-18",artikull:"Hekur Armature Ø12",lloji:"Shitje",sasia:2,cmUnit:110000,total:220000,klienti:"Bejko & Associatë"},
+    {id:3,data:"2025-01-20",artikull:"Tulla e zakonshme",lloji:"Blerje",sasia:100,cmUnit:28000,total:2800000,klienti:"Tullat Tirana"},
+    {id:4,data:"2025-01-22",artikull:"Kabllo NYY 3x2.5",lloji:"Shitje",sasia:300,cmUnit:420,total:126000,klienti:"Elektro Marin"},
+    {id:5,data:"2025-02-03",artikull:"Izolim termik EPS",lloji:"Shitje",sasia:120,cmUnit:500,total:60000,klienti:"Ndert Progres"},
+    {id:6,data:"2025-02-08",artikull:"Hekur Armature Ø16",lloji:"Blerje",sasia:5,cmUnit:95000,total:475000,klienti:"KROMAÇEL SHPK"},
+    {id:7,data:"2025-02-10",artikull:"Gëlqere hidraulike",lloji:"Shitje",sasia:80,cmUnit:580,total:46400,klienti:"Bardhi Konstruksion"},
+    {id:8,data:"2025-02-14",artikull:"Tub PVC Ø110",lloji:"Shitje",sasia:50,cmUnit:620,total:31000,klienti:"Hidro Marin SHPK"},
+  ],
+  furnitoret: [
+    {id:1,emri:"TITAN Cement Albania",nid:"L12345678A",kontakti:"+355 4 222 1234",adresa:"Rruga Nacionale, Shkodër",materialet:"Çimento, Gëlqere",afati:"30 ditë",status:"Aktiv"},
+    {id:2,emri:"KROMAÇEL SHPK",nid:"K98765432B",kontakti:"+355 69 333 4444",adresa:"Autostrada Tiranë-Durrës km12",materialet:"Hekur, Çelik",afati:"15 ditë",status:"Aktiv"},
+    {id:3,emri:"Electro Alba",nid:"M11223344C",kontakti:"+355 68 555 6666",adresa:"Rruga Kavajës, Tiranë",materialet:"Kabllo, Material Elektrik",afati:"45 ditë",status:"Aktiv"},
+    {id:4,emri:"Hidro System",nid:"J55667788D",kontakti:"+355 67 777 8888",adresa:"Zona Industriale, Durrës",materialet:"Tuba, Fitting Hidraulikë",afati:"30 ditë",status:"Aktiv"},
+    {id:5,emri:"Guri Alb SHPK",nid:"L33445566E",kontakti:"+355 52 111 2222",adresa:"Elbasan",materialet:"Zhavorr, Rëra, Gurë",afati:"Cash",status:"Aktiv"},
+  ],
+  shpenzime: [
+    {id:1,data:"2025-01-05",pershkrimi:"Qira zyrë + depo",kategoria:"Qira",vlera:150000,tvsh:true},
+    {id:2,data:"2025-01-10",pershkrimi:"Paga punëtorë Janar",kategoria:"Paga",vlera:420000,tvsh:false},
+    {id:3,data:"2025-01-15",pershkrimi:"Karburant makinash",kategoria:"Transport",vlera:45000,tvsh:true},
+    {id:4,data:"2025-02-05",pershkrimi:"Qira zyrë + depo",kategoria:"Qira",vlera:150000,tvsh:true},
+    {id:5,data:"2025-02-10",pershkrimi:"Paga punëtorë Shkurt",kategoria:"Paga",vlera:420000,tvsh:false},
+    {id:6,data:"2025-02-12",pershkrimi:"Mirëmbajtje makina",kategoria:"Mirëmbajtje",vlera:28000,tvsh:true},
+    {id:7,data:"2025-02-14",pershkrimi:"Telefon + Internet",kategoria:"Komunikim",vlera:8500,tvsh:true},
+  ],
+  tatimi: {
+    nipt: '',
+    emri_tatimpagues: '',
+    regjim: 'Normal', // Normal / Bизnes i Vogël
+    tvsh_regjistruar: true,
+    tatim_fitimi_norme: 15,
+  },
+  punonjesit: [
+    {id:1,emri:'Artan Hoxha',pozicioni:'Inxhinier Ndërtimi',fillimi:'2023-01-10',pagaBruto:120000,status:'Aktiv'},
+    {id:2,emri:'Blerina Muça',pozicioni:'Kontabiliste',fillimi:'2022-06-01',pagaBruto:90000,status:'Aktiv'},
+    {id:3,emri:'Genti Kola',pozicioni:'Punëtor Kantieri',fillimi:'2024-03-15',pagaBruto:55000,status:'Aktiv'},
+    {id:4,emri:'Dorjan Shehu',pozicioni:'Shofer',fillimi:'2023-09-01',pagaBruto:60000,status:'Aktiv'},
+  ],
+  pagat: [
+    {id:1,muaji:'2025-01',punonjesiId:1,pagaBruto:120000,status:'Paguar'},
+    {id:2,muaji:'2025-01',punonjesiId:2,pagaBruto:90000,status:'Paguar'},
+    {id:3,muaji:'2025-01',punonjesiId:3,pagaBruto:55000,status:'Paguar'},
+    {id:4,muaji:'2025-01',punonjesiId:4,pagaBruto:60000,status:'Paguar'},
+    {id:5,muaji:'2025-02',punonjesiId:1,pagaBruto:120000,status:'Paguar'},
+    {id:6,muaji:'2025-02',punonjesiId:2,pagaBruto:90000,status:'Paguar'},
+    {id:7,muaji:'2025-02',punonjesiId:3,pagaBruto:55000,status:'Pending'},
+    {id:8,muaji:'2025-02',punonjesiId:4,pagaBruto:60000,status:'Pending'},
+  ],
+});
+
+// ── SUBJECTS ──
+function loadSubjects(){
+  try{ return JSON.parse(localStorage.getItem('bt_subjects')||'null'); }catch(e){return null;}
+}
+function saveSubjects(){
+  localStorage.setItem('bt_subjects', JSON.stringify(subjects));
+}
+function loadCurrentSubjId(){
+  return localStorage.getItem('bt_current_subj')||null;
+}
+function saveCurrentSubjId(id){
+  localStorage.setItem('bt_current_subj', id);
+}
+
+let subjects = loadSubjects();
+if(!subjects){
+  subjects = [{id:'s1', emri:'Subjekti 1', ngjyra:'#f97316', data: defaultData()}];
+  saveSubjects();
+}
+
+let currentSubjId = loadCurrentSubjId() || subjects[0].id;
+// make sure saved id still exists
+if(!subjects.find(s=>s.id===currentSubjId)) currentSubjId = subjects[0].id;
+
+function getCurrentSubj(){
+  return subjects.find(s=>s.id===currentSubjId);
+}
+
+// state is always a live reference to current subject data
+let state = getCurrentSubj().data;
+
+function switchSubject(id){
+  // save current state back
+  getCurrentSubj().data = state;
+  saveSubjects();
+  currentSubjId = id;
+  saveCurrentSubjId(id);
+  state = getCurrentSubj().data;
+  renderSubjectList();
+  updateSubjTopbar();
+  render();
+}
+
+function renderSubjectList(){
+  const list = document.getElementById('subject-list');
+  list.innerHTML = subjects.map(s=>`
+    <button class="subject-btn ${s.id===currentSubjId?'active':''}" onclick="switchSubject('${s.id}')">
+      <div class="subject-dot" style="background:${s.ngjyra}"></div>
+      <span class="subject-name">${s.emri}</span>
+      ${subjects.length>1?`<span class="subject-del" onclick="event.stopPropagation();deleteSubject('${s.id}')">✕</span>`:''}
+    </button>
+  `).join('');
+}
+
+function updateSubjTopbar(){
+  const s = getCurrentSubj();
+  document.getElementById('subj-name-top').textContent = s.emri;
+  document.getElementById('subj-dot').style.background = s.ngjyra;
+}
+
+function deleteSubject(id){
+  if(subjects.length<=1){alert('Nuk mund të fshish subjektin e vetëm!');return;}
+  if(!confirm('Fshi këtë subjekt dhe të gjitha të dhënat e tij?')) return;
+  subjects = subjects.filter(s=>s.id!==id);
+  if(currentSubjId===id) currentSubjId = subjects[0].id;
+  saveSubjects();
+  saveCurrentSubjId(currentSubjId);
+  state = getCurrentSubj().data;
+  renderSubjectList();
+  updateSubjTopbar();
+  render();
+}
+
+// ── SUBJECT MODAL ──
+let editingSubjId = null;
+function openSubjectModal(id){
+  editingSubjId = id||null;
+  selectedColor = id ? subjects.find(s=>s.id===id).ngjyra : COLORS[subjects.length % COLORS.length];
+  document.getElementById('subj-modal-title').textContent = id ? 'Modifiko Subjekt' : '➕ Shto Subjekt';
+  document.getElementById('subj-emri').value = id ? subjects.find(s=>s.id===id).emri : '';
+  // color picker
+  document.getElementById('color-picker').innerHTML = COLORS.map(c=>
+    `<div class="color-opt ${c===selectedColor?'sel':''}" style="background:${c}" onclick="selectColor('${c}',this)"></div>`
+  ).join('');
+  document.getElementById('subj-modal-overlay').classList.add('open');
+}
+function closeSubjectModal(){
+  document.getElementById('subj-modal-overlay').classList.remove('open');
+}
+function selectColor(c, el){
+  selectedColor = c;
+  document.querySelectorAll('.color-opt').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function saveSubject(){
+  const emri = document.getElementById('subj-emri').value.trim();
+  if(!emri){alert('Shkruaj emrin e subjektit!');return;}
+  if(editingSubjId){
+    const s = subjects.find(x=>x.id===editingSubjId);
+    s.emri = emri; s.ngjyra = selectedColor;
+  } else {
+    if(subjects.length>=4){alert('Maksimumi 4 subjekte!');return;}
+    subjects.push({id:'s'+Date.now(), emri, ngjyra:selectedColor, data: defaultData()});
+  }
+  saveSubjects();
+  renderSubjectList();
+  updateSubjTopbar();
+  closeSubjectModal();
+}
+
+let currentPanel = 'dashboard';
+let editingId = null;
+let currentMat = 'all';
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  currentPanel = name;
+  const titles={dashboard:'Dashboard',materiale:'Materiale',pajisje:'Pajisje & Mjete',shitje:'Shitje & Stok',furnitoret:'Furnitorët',bilanci:'Bilanci & Tatimi',hr:'Paga & HR'};
+  document.getElementById('topbar-title').textContent = titles[name];
+  render();
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function render(){
+  renderDashboard();
+  renderMateriale();
+  renderPajisje();
+  renderShitje();
+  renderFurnitoret();
+  renderBilanci();
+  renderHR();
+  updateBadges();
+}
+
+function fmt(n){return Number(n).toLocaleString('sq-AL',{minimumFractionDigits:0,maximumFractionDigits:0})+' L'}
+function statusBadge(s){
+  const map={'Stok Normal':'badge-green','Stok i Ulët':'badge-yellow','Stok Kritik':'badge-red',
+    'Aktive':'badge-green','Riparim':'badge-yellow','Joaktive':'badge-red',
+    'Shitje':'badge-green','Blerje':'badge-blue','Aktiv':'badge-green'};
+  return `<span class="badge ${map[s]||'badge-blue'}">${s}</span>`;
+}
+
+function renderDashboard(){
+  const totArtikuj = state.materiale.length + state.pajisje.length;
+  const totVlera = state.materiale.reduce((s,m)=>s+m.sasia*m.cmBlerje,0)+state.pajisje.reduce((s,p)=>s+p.vlera,0);
+  const ulët = state.materiale.filter(m=>m.status==='Stok i Ulët'||m.status==='Stok Kritik').length;
+  document.getElementById('d-artikuj').textContent = totArtikuj;
+  document.getElementById('d-vlera').textContent = fmt(totVlera);
+  document.getElementById('d-ulët').textContent = ulët;
+  document.getElementById('d-furnitorë').textContent = state.furnitoret.length;
+
+  // Alerts
+  const alerts = state.materiale.filter(m=>m.status!=='Stok Normal');
+  const al = document.getElementById('alert-list');
+  if(alerts.length===0){al.innerHTML=`<div class="empty"><div class="empty-icon">✅</div>Nuk ka alarme stoku!</div>`;return;}
+  al.innerHTML = alerts.map(m=>`
+    <div class="alert-item ${m.status==='Stok Kritik'?'':'warn'}">
+      <div class="alert-dot ${m.status==='Stok Kritik'?'red':'warn'}"></div>
+      <div class="alert-text">
+        <div class="alert-name">${m.emri}</div>
+        <div class="alert-sub">Sasia: ${m.sasia} ${m.njesia} — Minimumi: ${m.min} — Furnitori: ${m.furnitori}</div>
+      </div>
+      ${statusBadge(m.status)}
+    </div>`).join('');
+
+  // Dash table — last 8 materiale
+  document.getElementById('dash-table').innerHTML = state.materiale.slice(0,8).map(m=>`
+    <tr>
+      <td>${m.emri}</td><td>${m.kategori}</td>
+      <td class="mono">${m.sasia} ${m.njesia}</td>
+      <td class="mono">${fmt(m.sasia*m.cmBlerje)}</td>
+      <td>${statusBadge(m.status)}</td>
+    </tr>`).join('');
+}
+
+function renderMateriale(){
+  const filtered = currentMat==='all'?state.materiale:state.materiale.filter(m=>m.kategori===currentMat);
+  document.getElementById('mat-tbody').innerHTML = filtered.map((m,i)=>`
+    <tr>
+      <td class="mono">${i+1}</td>
+      <td><strong>${m.emri}</strong></td>
+      <td>${m.kategori}</td>
+      <td class="mono">${m.njesia}</td>
+      <td class="mono">
+        ${m.sasia}
+        <div class="prog-track"><div class="prog-fill" style="width:${Math.min(100,m.sasia/m.min*100)}%;background:${m.sasia<m.min?'#ef4444':m.sasia<m.min*1.5?'#eab308':'#22c55e'}"></div></div>
+      </td>
+      <td class="mono">${m.min}</td>
+      <td class="mono">${fmt(m.cmBlerje)}</td>
+      <td class="mono">${fmt(m.cmShitje)}</td>
+      <td style="font-size:0.75rem">${m.furnitori}</td>
+      <td>${statusBadge(m.status)}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="editItem('mat',${m.id})">✏️</button>
+        <button class="action-btn del" onclick="deleteItem('mat',${m.id})">🗑️</button>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--muted)">Nuk ka materiale</td></tr>`;
+}
+
+function renderPajisje(){
+  document.getElementById('paj-tbody').innerHTML = state.pajisje.map((p,i)=>`
+    <tr>
+      <td class="mono">${i+1}</td>
+      <td><strong>${p.emri}</strong></td>
+      <td>${p.kategori}</td>
+      <td class="mono">${p.seria}</td>
+      <td>${p.gjendja}</td>
+      <td class="mono">${fmt(p.vlera)}</td>
+      <td class="mono" style="color:var(--yellow)">${p.mirembajtja}</td>
+      <td style="font-size:0.75rem">${p.lokacioni}</td>
+      <td>${statusBadge(p.status)}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="editItem('paj',${p.id})">✏️</button>
+        <button class="action-btn del" onclick="deleteItem('paj',${p.id})">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderShitje(){
+  const shitjet = state.shitje.filter(s=>s.lloji==='Shitje');
+  const totSh = shitjet.reduce((s,x)=>s+x.total,0);
+  document.getElementById('sh-total').textContent = fmt(totSh);
+  document.getElementById('sh-count').textContent = state.shitje.length;
+  // avg margin
+  let margin = 0;
+  shitjet.forEach(sh=>{
+    const mat = state.materiale.find(m=>sh.artikull.includes(m.emri.split(' ')[0]));
+    if(mat) margin += (sh.cmUnit - mat.cmBlerje)/sh.cmUnit*100;
+  });
+  document.getElementById('sh-profit').textContent = shitjet.length?(margin/shitjet.length).toFixed(1)+'%':'—';
+
+  document.getElementById('sh-tbody').innerHTML = [...state.shitje].reverse().map((s,i)=>`
+    <tr>
+      <td class="mono">${state.shitje.length-i}</td>
+      <td class="mono">${s.data}</td>
+      <td><strong>${s.artikull}</strong></td>
+      <td>${statusBadge(s.lloji)}</td>
+      <td class="mono">${s.sasia}</td>
+      <td class="mono">${fmt(s.cmUnit)}</td>
+      <td class="mono" style="color:${s.lloji==='Shitje'?'var(--green)':'var(--orange)'}">${fmt(s.total)}</td>
+      <td style="font-size:0.75rem">${s.klienti}</td>
+      <td>
+        <button class="action-btn del" onclick="deleteItem('sh',${s.id})">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderFurnitoret(){
+  const colors=['f0','f1','f2','f3','f4'];
+  document.getElementById('furnitor-grid').innerHTML = state.furnitoret.map((f,i)=>`
+    <div class="furnitor-card ${colors[i%5]}" style="animation-delay:${i*0.06}s">
+      <div class="f-name">🚛 ${f.emri}</div>
+      <div class="f-nid">${f.nid}</div>
+      <div class="f-row"><span class="f-row-label">Kontakt</span><span class="f-row-val">${f.kontakti}</span></div>
+      <div class="f-row"><span class="f-row-label">Afati</span><span class="f-row-val" style="color:var(--yellow)">${f.afati}</span></div>
+      <div class="f-row"><span class="f-row-label">Materialet</span></div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${f.materialet}</div>
+    </div>`).join('');
+
+  document.getElementById('fur-tbody').innerHTML = state.furnitoret.map((f,i)=>`
+    <tr>
+      <td class="mono">${i+1}</td>
+      <td><strong>${f.emri}</strong></td>
+      <td class="mono">${f.nid}</td>
+      <td>${f.kontakti}</td>
+      <td style="font-size:0.75rem">${f.adresa}</td>
+      <td style="font-size:0.75rem">${f.materialet}</td>
+      <td class="mono" style="color:var(--yellow)">${f.afati}</td>
+      <td>${statusBadge(f.status)}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="editItem('fur',${f.id})">✏️</button>
+        <button class="action-btn del" onclick="deleteItem('fur',${f.id})">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function updateBadges(){
+  const low = state.materiale.filter(m=>m.status!=='Stok Normal').length;
+  document.getElementById('badge-mat').textContent = state.materiale.length;
+  document.getElementById('badge-mat').style.background = low>0?'var(--red)':'var(--orange)';
+}
+
+// ═══════════════════════════════════════════════
+// FILTER & SEARCH
+// ═══════════════════════════════════════════════
+function filterMat(cat, el){
+  currentMat = cat;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderMateriale();
+}
+
+function searchTable(tbodyId, q){
+  const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+  rows.forEach(row=>{
+    row.style.display = row.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+
+// ═══════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════
+function openModal(type, id){
+  editingId = id||null;
+  const p = currentPanel;
+  let title, body;
+
+  if(p==='materiale'||p==='dashboard'){
+    title = id?'Modifiko Material':'➕ Shto Material të Ri';
+    const item = id?state.materiale.find(m=>m.id===id):{};
+    body=`<div class="form-grid">
+      <div class="field form-grid full"><label>Emri Materialit</label><input id="f-emri" value="${item.emri||''}" placeholder="Çimento Portland..."></div>
+      <div class="field"><label>Kategori</label><select id="f-kat">
+        ${['Betoni & Strukturë','Çelik & Metal','Muratim','Elektrik','Hidraulikë','Izolim','Tjetër'].map(c=>`<option ${item.kategori===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="field"><label>Njësia</label><input id="f-nje" value="${item.njesia||''}" placeholder="Ton / Metër / Copë"></div>
+      <div class="field"><label>Sasia Aktuale</label><input id="f-sas" type="number" value="${item.sasia||0}"></div>
+      <div class="field"><label>Sasia Minimale</label><input id="f-min" type="number" value="${item.min||0}"></div>
+      <div class="field"><label>Çmimi Blerje (L)</label><input id="f-cmb" type="number" value="${item.cmBlerje||0}"></div>
+      <div class="field"><label>Çmimi Shitje (L)</label><input id="f-cms" type="number" value="${item.cmShitje||0}"></div>
+      <div class="field"><label>Furnitori</label><select id="f-fur">
+        ${state.furnitoret.map(f=>`<option ${item.furnitori===f.emri?'selected':''}>${f.emri}</option>`).join('')}
+      </select></div>
+    </div>`;
+    document._saveType='mat';
+  } else if(p==='pajisje'){
+    title = id?'Modifiko Pajisje':'➕ Shto Pajisje të Re';
+    const item = id?state.pajisje.find(p=>p.id===id):{};
+    body=`<div class="form-grid">
+      <div class="field form-grid full"><label>Emri Pajisjes</label><input id="f-emri" value="${item.emri||''}" placeholder="Betonierë, Grilë..."></div>
+      <div class="field"><label>Kategori</label><select id="f-kat">
+        ${['Makina','Mjete Dore','Makina të Rënda','Elektrike','Skela','Tjetër'].map(c=>`<option ${item.kategori===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="field"><label>Seria / Kodi</label><input id="f-ser" value="${item.seria||''}"></div>
+      <div class="field"><label>Gjendja</label><select id="f-gje">
+        ${['Shumë Mirë','Mirë','Nevojitet Riparim','Jashtë Funksionit'].map(c=>`<option ${item.gjendja===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="field"><label>Vlera Blerjes (L)</label><input id="f-vlr" type="number" value="${item.vlera||0}"></div>
+      <div class="field"><label>Mirëmbajtja Radhës</label><input id="f-mir" type="date" value="${item.mirembajtja&&item.mirembajtja!=='—'?item.mirembajtja:''}"></div>
+      <div class="field"><label>Lokacioni</label><input id="f-lok" value="${item.lokacioni||''}" placeholder="Kantieri, Depo..."></div>
+      <div class="field"><label>Statusi</label><select id="f-sts">
+        ${['Aktive','Riparim','Joaktive'].map(c=>`<option ${item.status===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    </div>`;
+    document._saveType='paj';
+  } else if(p==='shitje'){
+    title = '➕ Regjistro Lëvizje';
+    body=`<div class="form-grid">
+      <div class="field"><label>Data</label><input id="f-dat" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="field"><label>Lloji</label><select id="f-llj">
+        <option>Shitje</option><option>Blerje</option>
+      </select></div>
+      <div class="field form-grid full"><label>Artikulli</label><input id="f-art" placeholder="Emri i materialit..."></div>
+      <div class="field"><label>Sasia</label><input id="f-sas" type="number" value="1"></div>
+      <div class="field"><label>Çmimi për Njësi (L)</label><input id="f-cmu" type="number" value="0"></div>
+      <div class="field form-grid full"><label>Klienti / Furnitori / Shënim</label><input id="f-kli" placeholder="Emri klientit ose furnitorit..."></div>
+    </div>`;
+    document._saveType='sh';
+  } else if(p==='furnitoret'){
+    title = id?'Modifiko Furnitor':'➕ Shto Furnitor të Ri';
+    const item = id?state.furnitoret.find(f=>f.id===id):{};
+    body=`<div class="form-grid">
+      <div class="field"><label>Emri Firmës</label><input id="f-emri" value="${item.emri||''}"></div>
+      <div class="field"><label>NID / NIPT</label><input id="f-nid" value="${item.nid||''}"></div>
+      <div class="field"><label>Kontakti</label><input id="f-kon" value="${item.kontakti||''}"></div>
+      <div class="field"><label>Afati Pageses</label><input id="f-afa" value="${item.afati||'30 ditë'}"></div>
+      <div class="field form-grid full"><label>Adresa</label><input id="f-adr" value="${item.adresa||''}"></div>
+      <div class="field form-grid full"><label>Materialet e Furnizimit</label><input id="f-mat" value="${item.materialet||''}"></div>
+    </div>`;
+    document._saveType='fur';
+  } else if(type==='shpenzim'||p==='bilanci'){
+    const item = id?state.shpenzime.find(s=>s.id===id):{};
+    title = id?'Modifiko Shpenzim':'➕ Shto Shpenzim';
+    body=`<div class="form-grid">
+      <div class="field"><label>Data</label><input id="f-dat" type="date" value="${item.data||new Date().toISOString().split('T')[0]}"></div>
+      <div class="field"><label>Kategoria</label><select id="f-kat">
+        ${['Qira','Paga','Transport','Mirëmbajtje','Komunikim','Utilities','Marketing','Tatim & Tarifë','Tjetër'].map(c=>`<option ${item.kategoria===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="field form-grid full"><label>Përshkrimi</label><input id="f-emri" value="${item.pershkrimi||''}" placeholder="Qira, paga, karburant..."></div>
+      <div class="field"><label>Vlera (pa TVSH) L</label><input id="f-vlr" type="number" value="${item.vlera||0}"></div>
+      <div class="field"><label>Me TVSH 20%?</label><select id="f-tvsh">
+        <option value="true" ${item.tvsh?'selected':''}>Po — me TVSH</option>
+        <option value="false" ${!item.tvsh&&item.tvsh!==undefined?'selected':''}>Jo — pa TVSH</option>
+      </select></div>
+    </div>`;
+    document._saveType='shp';
+  }
+
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');editingId=null;}
+
+function g(id){const el=document.getElementById(id);return el?el.value:''}
+
+
+function editItem(type, id){
+  document._saveType=type;
+  const panelMap={mat:'materiale',paj:'pajisje',sh:'shitje',fur:'furnitoret',shp:'bilanci'};
+  currentPanel=panelMap[type];
+  openModal(type, id);
+}
+
+function deleteItem(type, id){
+  if(!confirm('Fshi këtë artikull?')) return;
+  if(type==='mat') state.materiale=state.materiale.filter(m=>m.id!==id);
+  else if(type==='paj') state.pajisje=state.pajisje.filter(p=>p.id!==id);
+  else if(type==='sh') state.shitje=state.shitje.filter(s=>s.id!==id);
+  else if(type==='fur') state.furnitoret=state.furnitoret.filter(f=>f.id!==id);
+  else if(type==='shp') state.shpenzime=state.shpenzime.filter(s=>s.id!==id);
+  getCurrentSubj().data = state;
+  saveSubjects();
+  render();
+}
+
+// ═══════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════
+function exportCSV(){
+  const p = currentPanel;
+  let csv='', filename='inventar';
+  if(p==='materiale'||p==='dashboard'){
+    csv='Emri,Kategori,Njesia,Sasia,Min,Cmimi Blerje,Cmimi Shitje,Furnitori,Status\n';
+    state.materiale.forEach(m=>csv+=`"${m.emri}","${m.kategori}","${m.njesia}",${m.sasia},${m.min},${m.cmBlerje},${m.cmShitje},"${m.furnitori}","${m.status}"\n`);
+    filename='materiale';
+  } else if(p==='pajisje'){
+    csv='Emri,Kategori,Seria,Gjendja,Vlera,Mirembajtja,Lokacioni,Status\n';
+    state.pajisje.forEach(p=>csv+=`"${p.emri}","${p.kategori}","${p.seria}","${p.gjendja}",${p.vlera},"${p.mirembajtja}","${p.lokacioni}","${p.status}"\n`);
+    filename='pajisje';
+  } else if(p==='shitje'){
+    csv='Data,Artikull,Lloji,Sasia,Cmimi Unit,Total,Klienti\n';
+    state.shitje.forEach(s=>csv+=`"${s.data}","${s.artikull}","${s.lloji}",${s.sasia},${s.cmUnit},${s.total},"${s.klienti}"\n`);
+    filename='shitje';
+  } else if(p==='furnitoret'){
+    csv='Emri,NID,Kontakti,Adresa,Materialet,Afati,Status\n';
+    state.furnitoret.forEach(f=>csv+=`"${f.emri}","${f.nid}","${f.kontakti}","${f.adresa}","${f.materialet}","${f.afati}","${f.status}"\n`);
+    filename='furnitoret';
+  }
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename+'.csv';a.click();
+}
+
+// ═══════════════════════════════════════════════
+// BILANCI & TATIMI
+// ═══════════════════════════════════════════════
+let bilPeriod = 'vit';
+let bilChart = null;
+
+function setBilPeriod(p, el){
+  bilPeriod = p;
+  document.querySelectorAll('#panel-bilanci .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const mSel = document.getElementById('bil-month');
+  if(mSel) mSel.style.display = p==='muaj'?'':'none';
+  renderBilanci();
+}
+
+function getBilFilter(){
+  const yearSel = document.getElementById('bil-year');
+  const monthSel = document.getElementById('bil-month');
+  if(!yearSel) return {year:null,month:null};
+  const year = yearSel.value;
+  const month = monthSel?monthSel.value:null;
+  return {year, month};
+}
+
+function filterByPeriod(arr, dateField){
+  const {year, month} = getBilFilter();
+  return arr.filter(x=>{
+    if(!x[dateField]) return false;
+    const d = x[dateField];
+    if(bilPeriod==='vit') return d.startsWith(year);
+    return d.startsWith(year+'-'+month);
+  });
+}
+
+function initBilYears(){
+  const yearSel = document.getElementById('bil-year');
+  if(!yearSel) return;
+  const allDates = [
+    ...state.shitje.map(s=>s.data),
+    ...(state.shpenzime||[]).map(s=>s.data)
+  ].filter(Boolean).map(d=>d.slice(0,4));
+  const years = [...new Set(allDates)].sort().reverse();
+  if(!years.length) years.push(new Date().getFullYear().toString());
+  const curYear = yearSel.value || years[0];
+  yearSel.innerHTML = years.map(y=>`<option value="${y}" ${y===curYear?'selected':''}>${y}</option>`).join('');
+}
+
+function renderBilanci(){
+  if(!document.getElementById('bil-ardhura')) return;
+  if(!state.shpenzime) state.shpenzime = [];
+  if(!state.tatimi) state.tatimi = {nipt:'',emri_tatimpagues:'',regjim:'Normal',tvsh_regjistruar:true,tatim_fitimi_norme:15};
+
+  initBilYears();
+
+  const shitjet = filterByPeriod(state.shitje, 'data').filter(s=>s.lloji==='Shitje');
+  const blerjet = filterByPeriod(state.shitje, 'data').filter(s=>s.lloji==='Blerje');
+  const shpenzime = filterByPeriod(state.shpenzime, 'data');
+
+  // Paga & HR — merged into bilanci
+  const {year:bilYear, month:bilMonth} = getBilFilter();
+  const pagat = (state.pagat||[]).filter(p=>{
+    if(bilPeriod==='vit') return p.muaji && p.muaji.startsWith(bilYear);
+    return p.muaji === bilYear+'-'+bilMonth;
+  });
+  const KONTRIBUTE_PUNEDH = 0.167;
+  const TATIM_ARDHURA = 0.13;
+  const totalPaga = pagat.reduce((s,p)=>{
+    const bruto = p.pagaBruto||0;
+    const kontribute = bruto * KONTRIBUTE_PUNEDH;
+    return s + bruto + kontribute;
+  }, 0);
+
+  // Financials
+  const ardhura = shitjet.reduce((s,x)=>s+x.total,0);
+  const kostoB  = blerjet.reduce((s,x)=>s+x.total,0);
+  const shpOp   = shpenzime.reduce((s,x)=>s+x.vlera,0);
+  const totalShp = kostoB + shpOp + totalPaga;
+  const fitimPara = ardhura - totalShp;
+
+  // TVSH
+  const TVSH = 0.20;
+  const tvshMbj = shitjet.reduce((s,x)=>s + x.total*TVSH/(1+TVSH), 0); // assume prices incl. TVSH
+  const tvshZbr = [...blerjet, ...shpenzime.filter(s=>s.tvsh)].reduce((s,x)=>{
+    const v = x.total||x.vlera||0;
+    return s + v*TVSH;
+  },0);
+  const tvshNet = Math.max(0, tvshMbj - tvshZbr);
+
+  // Tatim fitimi
+  const norme = (state.tatimi.tatim_fitimi_norme||15)/100;
+  const tatimFitimi = fitimPara>0 ? fitimPara*norme : 0;
+  const fitimNeto = fitimPara - tatimFitimi;
+
+  // Update cards
+  document.getElementById('bil-ardhura').textContent = fmt(ardhura);
+  document.getElementById('bil-shpenzime').textContent = fmt(totalShp);
+  document.getElementById('bil-fitim-para').textContent = fmt(fitimPara);
+  document.getElementById('bil-fitim-neto').textContent = fmt(fitimNeto);
+  document.getElementById('bil-tvsh-mbj').textContent = fmt(tvshMbj);
+  document.getElementById('bil-tvsh-zbr').textContent = fmt(tvshZbr);
+  document.getElementById('bil-tvsh-net').textContent = fmt(tvshNet);
+
+  // Color fitim
+  const fpEl = document.getElementById('bil-fitim-para');
+  const fnEl = document.getElementById('bil-fitim-neto');
+  fpEl.style.color = fitimPara>=0?'var(--green)':'var(--red)';
+  fnEl.style.color = fitimNeto>=0?'var(--green)':'var(--red)';
+
+  // Tatim box
+  const marzhi = ardhura>0?(fitimPara/ardhura*100).toFixed(1):0;
+  document.getElementById('bil-tatim-box').innerHTML = `
+    <div class="bil-tatim-card"><div class="bil-tc-label">Tatim Fitimi (${state.tatimi.tatim_fitimi_norme||15}%)</div><div class="bil-tc-val" style="color:var(--red)">${fmt(tatimFitimi)}</div><div class="bil-tc-sub">Norma: ${state.tatimi.regjim||'Normal'}</div></div>
+    <div class="bil-tatim-card green"><div class="bil-tc-label">TVSH për Pagesë</div><div class="bil-tc-val" style="color:var(--yellow)">${fmt(tvshNet)}</div><div class="bil-tc-sub">Deklaratë mujore</div></div>
+    <div class="bil-tatim-card red"><div class="bil-tc-label">Marzhi i Fitimit</div><div class="bil-tc-val" style="color:${marzhi>=0?'var(--green)':'var(--red)'}">${marzhi}%</div><div class="bil-tc-sub">Fitim / Të ardhura</div></div>
+  `;
+
+  // Chart — monthly breakdown for the year
+  renderBilChart();
+
+  // Shpenzime table
+  document.getElementById('shp-tbody').innerHTML = [...shpenzime].reverse().map((s,i)=>{
+    const tvshAmt = s.tvsh?(s.vlera*TVSH):0;
+    return `<tr>
+      <td class="mono">${shpenzime.length-i}</td>
+      <td class="mono">${s.data}</td>
+      <td><strong>${s.pershkrimi}</strong></td>
+      <td><span class="badge badge-blue">${s.kategoria}</span></td>
+      <td class="mono">${fmt(s.vlera)}</td>
+      <td class="mono" style="color:var(--yellow)">${s.tvsh?fmt(tvshAmt):'—'}</td>
+      <td class="mono" style="color:var(--red)">${fmt(s.vlera+tvshAmt)}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="editItem('shp',${s.id})">✏️</button>
+        <button class="action-btn del" onclick="deleteItem('shp',${s.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Nuk ka shpenzime të regjistruara</td></tr>`;
+}
+
+function renderBilChart(){
+  const canvas = document.getElementById('bil-chart');
+  if(!canvas) return;
+  const {year} = getBilFilter();
+  const months = ['Jan','Shk','Mar','Pri','Maj','Qer','Kor','Gus','Sht','Tet','Nën','Dhj'];
+
+  const ardhM = Array(12).fill(0);
+  const shpM  = Array(12).fill(0);
+
+  state.shitje.filter(s=>s.data&&s.data.startsWith(year)&&s.lloji==='Shitje').forEach(s=>{
+    const m = parseInt(s.data.slice(5,7))-1;
+    ardhM[m] += s.total;
+  });
+  state.shitje.filter(s=>s.data&&s.data.startsWith(year)&&s.lloji==='Blerje').forEach(s=>{
+    const m = parseInt(s.data.slice(5,7))-1;
+    shpM[m] += s.total;
+  });
+  (state.shpenzime||[]).filter(s=>s.data&&s.data.startsWith(year)).forEach(s=>{
+    const m = parseInt(s.data.slice(5,7))-1;
+    shpM[m] += s.vlera;
+  });
+
+  const maxVal = Math.max(...ardhM,...shpM,1);
+  const W = canvas.offsetWidth||600, H = canvas.offsetHeight||200;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const padL=40, padR=16, padT=16, padB=36;
+  const barW = (W-padL-padR)/(12*2+12*0.5);
+  const gap = barW*0.5;
+
+  months.forEach((m,i)=>{
+    const x = padL + i*(barW*2+gap);
+    const hA = (ardhM[i]/maxVal)*(H-padT-padB);
+    const hS = (shpM[i]/maxVal)*(H-padT-padB);
+
+    // Ardhura bar
+    ctx.fillStyle='rgba(34,197,94,0.7)';
+    ctx.beginPath();
+    ctx.roundRect(x, H-padB-hA, barW, hA, [3,3,0,0]);
+    ctx.fill();
+
+    // Shpenzime bar
+    ctx.fillStyle='rgba(239,68,68,0.7)';
+    ctx.beginPath();
+    ctx.roundRect(x+barW+2, H-padB-hS, barW, hS, [3,3,0,0]);
+    ctx.fill();
+
+    // Month label
+    ctx.fillStyle='#7a8ba8';
+    ctx.font='10px DM Sans,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(m, x+barW, H-padB+14);
+  });
+
+  // Y axis hint
+  ctx.fillStyle='#7a8ba8';
+  ctx.font='9px DM Sans,sans-serif';
+  ctx.textAlign='right';
+  [0,0.5,1].forEach(f=>{
+    const y = H-padB - f*(H-padT-padB);
+    ctx.fillText((maxVal*f/1000).toFixed(0)+'k', padL-4, y+3);
+    ctx.strokeStyle='rgba(255,255,255,0.04)';
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+  });
+
+  // Legend
+  ctx.fillStyle='rgba(34,197,94,0.8)'; ctx.fillRect(padL,4,10,8);
+  ctx.fillStyle='#e8edf5'; ctx.font='10px DM Sans'; ctx.textAlign='left';
+  ctx.fillText('Të Ardhura', padL+14, 11);
+  ctx.fillStyle='rgba(239,68,68,0.8)'; ctx.fillRect(padL+90,4,10,8);
+  ctx.fillStyle='#e8edf5'; ctx.fillText('Shpenzime', padL+104, 11);
+}
+
+function exportBilanciPDF(){
+  const subj = getCurrentSubj();
+  const {year} = getBilFilter();
+  const shitjet = filterByPeriod(state.shitje,'data').filter(s=>s.lloji==='Shitje');
+  const blerjet = filterByPeriod(state.shitje,'data').filter(s=>s.lloji==='Blerje');
+  const shpenzime = filterByPeriod(state.shpenzime,'data');
+  const ardhura = shitjet.reduce((s,x)=>s+x.total,0);
+  const totalShp = blerjet.reduce((s,x)=>s+x.total,0)+shpenzime.reduce((s,x)=>s+x.vlera,0);
+  const fitim = ardhura - totalShp;
+  const norme = (state.tatimi?.tatim_fitimi_norme||15)/100;
+  const tatim = fitim>0?fitim*norme:0;
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Raport Financiar — ${subj.emri}</title>
+  <style>
+    body{font-family:Arial,sans-serif;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto}
+    h1{font-size:22px;margin-bottom:4px} .sub{color:#666;font-size:13px;margin-bottom:32px}
+    .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:14px}
+    .row.total{font-weight:bold;font-size:16px;border-top:2px solid #333;border-bottom:none;margin-top:8px}
+    .green{color:#16a34a} .red{color:#dc2626} .blue{color:#2563eb}
+    .section{margin-top:28px} h2{font-size:15px;color:#444;border-bottom:2px solid #f97316;padding-bottom:6px}
+    table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+    th{text-align:left;padding:8px;background:#f5f5f5;font-size:11px;text-transform:uppercase}
+    td{padding:8px;border-bottom:1px solid #eee}
+    .footer{margin-top:40px;font-size:11px;color:#999;text-align:center}
+  </style></head><body>
+  <h1>📑 Raport Financiar — ${subj.emri}</h1>
+  <div class="sub">Periudha: ${bilPeriod==='vit'?'Viti '+year:'Muaji '+year} &nbsp;|&nbsp; Gjeneruar: ${new Date().toLocaleString('sq-AL')}</div>
+  <div class="section"><h2>PASQYRA E TË ARDHURAVE</h2>
+    <div class="row"><span>Të Ardhura nga Shitjet</span><span class="green">${fmt(ardhura)}</span></div>
+    <div class="row"><span>Kosto Blerje Mallrash</span><span class="red">- ${fmt(blerjet.reduce((s,x)=>s+x.total,0))}</span></div>
+    <div class="row"><span>Shpenzime Operative</span><span class="red">- ${fmt(shpenzime.reduce((s,x)=>s+x.vlera,0))}</span></div>
+    <div class="row total"><span>FITIMI PARA TATIMIT</span><span class="${fitim>=0?'green':'red'}">${fmt(fitim)}</span></div>
+    <div class="row"><span>Tatim Fitimi (${(norme*100).toFixed(0)}%)</span><span class="red">- ${fmt(tatim)}</span></div>
+    <div class="row total"><span>FITIMI NETO</span><span class="${(fitim-tatim)>=0?'green':'red'}">${fmt(fitim-tatim)}</span></div>
+  </div>
+  <div class="section"><h2>SHPENZIME OPERATIVE</h2>
+  <table><thead><tr><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Vlera</th></tr></thead><tbody>
+  ${shpenzime.map(s=>`<tr><td>${s.data}</td><td>${s.pershkrimi}</td><td>${s.kategoria}</td><td>${fmt(s.vlera)}</td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="footer">BuildTrack — Raport i gjeneruar automatikisht • ${new Date().toLocaleDateString('sq-AL')}</div>
+  </body></html>`;
+
+  const blob = new Blob([html],{type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `raport_financiar_${subj.emri.replace(/\s/g,'_')}_${year}.html`;
+  a.click();
+  showToast('Raporti u shkarkua!','📄');
+}
+
+// ═══════════════════════════════════════════════
+// PAGA & HR
+// ═══════════════════════════════════════════════
+let hrView = 'punonjes';
+
+function setHrView(v, el){
+  hrView = v;
+  document.querySelectorAll('#panel-hr .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  // show/hide sub-views
+  document.getElementById('hr-view-punonjes').style.display  = v==='punonjes'?'':'none';
+  document.getElementById('hr-view-paga').style.display      = v==='paga'?'':'none';
+  document.getElementById('hr-view-shpenzime').style.display = v==='shpenzime'?'':'none';
+  // change add button label
+  const labels={punonjes:'＋ Shto Punonjës',paga:'＋ Regjistro Pagë',shpenzime:'＋ Shto Shpenzim'};
+  document.getElementById('hr-btn-add').textContent = labels[v];
+  renderHR();
+}
+
+function initHRYears(){
+  const sel = document.getElementById('hr-year');
+  if(!sel) return;
+  const all = [
+    ...(state.pagat||[]).map(p=>p.muaji?.slice(0,4)),
+    ...(state.shpenzime||[]).map(s=>s.data?.slice(0,4)),
+  ].filter(Boolean);
+  const years = [...new Set(all)].sort().reverse();
+  if(!years.length) years.push(new Date().getFullYear().toString());
+  const cur = sel.value||years[0];
+  sel.innerHTML = years.map(y=>`<option value="${y}" ${y===cur?'selected':''}>${y}</option>`).join('');
+}
+
+function getHRFilter(){
+  const y = document.getElementById('hr-year')?.value||'2025';
+  const m = document.getElementById('hr-month')?.value||'all';
+  return {year:y, month:m};
+}
+
+function calcPaga(bruto){
+  const KONTRIBUTE_PUNEDH = 0.167;
+  const KONTRIBUTE_PUNET  = 0.114;
+  const TATIM_MIN = 40000; // prag tatimi
+  const kontPunedh = bruto * KONTRIBUTE_PUNEDH;
+  const kontPunet  = bruto * KONTRIBUTE_PUNET;
+  const bazaTatimit = Math.max(0, bruto - kontPunet - TATIM_MIN);
+  const tatim = bazaTatimit > 0 ? bazaTatimit * 0.13 : 0;
+  const neto  = bruto - kontPunet - tatim;
+  return {kontPunedh, kontPunet, tatim, neto, kostoTotale: bruto + kontPunedh};
+}
+
+function renderHR(){
+  if(!document.getElementById('hr-total-pun')) return;
+  if(!state.punonjesit) state.punonjesit = [];
+  if(!state.pagat) state.pagat = [];
+
+  initHRYears();
+  const {year, month} = getHRFilter();
+
+  const aktiv = state.punonjesit.filter(p=>p.status==='Aktiv');
+  const pagaKuMuajit = aktiv.reduce((s,p)=>{
+    const c = calcPaga(p.pagaBruto||0);
+    return s + c.kostoTotale;
+  }, 0);
+  const kontributeTotal = aktiv.reduce((s,p)=>s+calcPaga(p.pagaBruto||0).kontPunedh,0);
+
+  // Filter pagat
+  const pagat = (state.pagat||[]).filter(p=>{
+    if(!p.muaji) return false;
+    if(month!=='all') return p.muaji===year+'-'+month;
+    return p.muaji.startsWith(year);
+  });
+
+  // Filter shpenzime
+  const shpenzime = (state.shpenzime||[]).filter(s=>{
+    if(!s.data) return false;
+    if(month!=='all') return s.data.startsWith(year+'-'+month);
+    return s.data.startsWith(year);
+  });
+  const totShp = shpenzime.reduce((s,x)=>s+x.vlera,0);
+
+  document.getElementById('hr-total-pun').textContent = aktiv.length;
+  document.getElementById('hr-total-paga').textContent = fmt(pagaKuMuajit);
+  document.getElementById('hr-kontribute').textContent = fmt(kontributeTotal);
+  document.getElementById('hr-shp-tjera').textContent = fmt(totShp);
+
+  // PUNONJËSIT TABLE
+  document.getElementById('hr-pun-tbody').innerHTML = state.punonjesit.map((p,i)=>{
+    const c = calcPaga(p.pagaBruto||0);
+    return `<tr>
+      <td class="mono">${i+1}</td>
+      <td><strong>${p.emri}</strong></td>
+      <td>${p.pozicioni}</td>
+      <td class="mono">${p.fillimi||'—'}</td>
+      <td class="mono">${fmt(p.pagaBruto)}</td>
+      <td class="mono" style="color:var(--yellow)">${fmt(c.kontPunedh)}</td>
+      <td class="mono" style="color:var(--green)">${fmt(c.neto)}</td>
+      <td>${p.status==='Aktiv'?'<span class="badge badge-green">Aktiv</span>':'<span class="badge badge-red">Joaktiv</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="editHRItem('pun',${p.id})">✏️</button>
+        <button class="action-btn del" onclick="deleteHRItem('pun',${p.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">Nuk ka punonjës</td></tr>`;
+
+  // PAGAT TABLE
+  document.getElementById('hr-paga-tbody').innerHTML = pagat.map((p,i)=>{
+    const pun = state.punonjesit.find(x=>x.id===p.punonjesiId);
+    const c = calcPaga(p.pagaBruto||0);
+    return `<tr>
+      <td class="mono">${i+1}</td>
+      <td class="mono">${p.muaji}</td>
+      <td><strong>${pun?pun.emri:'—'}</strong></td>
+      <td class="mono">${fmt(p.pagaBruto)}</td>
+      <td class="mono" style="color:var(--red)">${fmt(c.tatim)}</td>
+      <td class="mono" style="color:var(--yellow)">${fmt(c.kontPunedh+c.kontPunet)}</td>
+      <td class="mono" style="color:var(--green)">${fmt(c.neto)}</td>
+      <td>${p.status==='Paguar'?'<span class="badge badge-green">Paguar</span>':'<span class="badge badge-yellow">Pending</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="togglePagaStatus(${p.id})">✅</button>
+        <button class="action-btn del" onclick="deleteHRItem('pag',${p.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">Nuk ka pagesa të regjistruara</td></tr>`;
+
+  // SHPENZIME TABLE
+  const TVSH=0.20;
+  document.getElementById('hr-shp-tbody').innerHTML = shpenzime.map((s,i)=>{
+    const tvshAmt = s.tvsh?(s.vlera*TVSH):0;
+    return `<tr>
+      <td class="mono">${i+1}</td>
+      <td class="mono">${s.data}</td>
+      <td><strong>${s.pershkrimi}</strong></td>
+      <td><span class="badge badge-blue">${s.kategoria}</span></td>
+      <td class="mono">${fmt(s.vlera)}</td>
+      <td class="mono" style="color:var(--yellow)">${s.tvsh?fmt(tvshAmt):'—'}</td>
+      <td class="mono" style="color:var(--red)">${fmt(s.vlera+tvshAmt)}</td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="editItem('shp',${s.id})">✏️</button>
+        <button class="action-btn del" onclick="deleteItem('shp',${s.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Nuk ka shpenzime</td></tr>`;
+}
+
+function togglePagaStatus(id){
+  const p = state.pagat.find(x=>x.id===id);
+  if(!p) return;
+  p.status = p.status==='Paguar'?'Pending':'Paguar';
+  getCurrentSubj().data = state; saveSubjects(); renderHR();
+}
+
+function deleteHRItem(type, id){
+  if(!confirm('Fshi këtë rekord?')) return;
+  if(type==='pun') state.punonjesit = state.punonjesit.filter(x=>x.id!==id);
+  else if(type==='pag') state.pagat = state.pagat.filter(x=>x.id!==id);
+  getCurrentSubj().data = state; saveSubjects(); renderHR();
+}
+
+function editHRItem(type, id){
+  openHRModal(type, id);
+}
+
+// HR MODAL
+function openHRModal(type, id){
+  const view = type||hrView;
+  editingId = id||null;
+  let title, body;
+
+  if(view==='punonjes'||view==='pun'){
+    const item = id ? state.punonjesit.find(x=>x.id===id) : {};
+    title = id?'✏️ Modifiko Punonjës':'➕ Shto Punonjës të Ri';
+    body=`<div class="form-grid">
+      <div class="field form-grid full"><label>Emri & Mbiemri</label><input id="f-emri" value="${item.emri||''}" placeholder="Artan Hoxha..."></div>
+      <div class="field"><label>Pozicioni</label><input id="f-poz" value="${item.pozicioni||''}" placeholder="Inxhinier, Punëtor..."></div>
+      <div class="field"><label>Data Fillimit</label><input id="f-fil" type="date" value="${item.fillimi||''}"></div>
+      <div class="field"><label>Paga Bruto (L/muaj)</label><input id="f-paga" type="number" value="${item.pagaBruto||0}"></div>
+      <div class="field"><label>Statusi</label><select id="f-sts">
+        <option ${item.status==='Aktiv'?'selected':''}>Aktiv</option>
+        <option ${item.status==='Joaktiv'?'selected':''}>Joaktiv</option>
+      </select></div>
+    </div>`;
+    document._saveType='pun';
+
+  } else if(view==='paga'||view==='pag'){
+    title = '➕ Regjistro Pagë Mujore';
+    const muajAktual = new Date().toISOString().slice(0,7);
+    body=`<div class="form-grid">
+      <div class="field"><label>Muaji</label><input id="f-muaj" type="month" value="${muajAktual}"></div>
+      <div class="field"><label>Punonjësi</label><select id="f-pun">
+        ${state.punonjesit.filter(p=>p.status==='Aktiv').map(p=>`<option value="${p.id}">${p.emri} — ${fmt(p.pagaBruto)}</option>`).join('')}
+      </select></div>
+      <div class="field form-grid full"><label>Paga Bruto (L) — mund të ndryshohet</label><input id="f-paga" type="number" value="0" oninput="updatePagaCalc()"></div>
+      <div class="field form-grid full" id="paga-calc-box" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.78rem;color:var(--muted)">
+        Zgjidh punonjësin për të parë llogaritjen...
+      </div>
+      <div class="field"><label>Statusi</label><select id="f-sts"><option>Paguar</option><option>Pending</option></select></div>
+    </div>`;
+    document._saveType='pag';
+    setTimeout(()=>{
+      const sel=document.getElementById('f-pun');
+      if(sel){
+        const pun=state.punonjesit.find(p=>p.id==sel.value);
+        if(pun){document.getElementById('f-paga').value=pun.pagaBruto; updatePagaCalc();}
+        sel.onchange=()=>{
+          const p2=state.punonjesit.find(x=>x.id==sel.value);
+          if(p2){document.getElementById('f-paga').value=p2.pagaBruto; updatePagaCalc();}
+        };
+      }
+    },50);
+
+  } else if(view==='shpenzime'){
+    // reuse existing shpenzim modal logic
+    currentPanel='bilanci';
+    openModal('shpenzim');
+    return;
+  }
+
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function updatePagaCalc(){
+  const bruto = parseFloat(document.getElementById('f-paga')?.value)||0;
+  const c = calcPaga(bruto);
+  const box = document.getElementById('paga-calc-box');
+  if(!box) return;
+  box.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.78rem">
+      <div>Paga Bruto: <strong style="color:var(--text)">${fmt(bruto)}</strong></div>
+      <div>Kontribute Punëtor (11.4%): <strong style="color:var(--yellow)">- ${fmt(c.kontPunet)}</strong></div>
+      <div>Tatim Mbi të Ardhura (13%): <strong style="color:var(--red)">- ${fmt(c.tatim)}</strong></div>
+      <div>Kontribute Punëdhënës (16.7%): <strong style="color:var(--orange)">+ ${fmt(c.kontPunedh)}</strong></div>
+      <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:6px;margin-top:2px">
+        Paga Neto (merr punëtori): <strong style="color:var(--green)">${fmt(c.neto)}</strong> &nbsp;|&nbsp;
+        Kosto Totale Firmës: <strong style="color:var(--red)">${fmt(c.kostoTotale)}</strong>
+      </div>
+    </div>`;
+}
+
+// Patch saveItem to handle pun and pag types
+const _origSaveItem = saveItem;
+function saveItem(){
+  const t = document._saveType;
+  if(t==='pun'){
+    const item={emri:g('f-emri'),pozicioni:g('f-poz'),fillimi:g('f-fil'),
+      pagaBruto:parseFloat(g('f-paga'))||0,status:g('f-sts')};
+    if(editingId){const i=state.punonjesit.findIndex(x=>x.id===editingId);item.id=editingId;state.punonjesit[i]=item;}
+    else{item.id=Date.now();state.punonjesit.push(item);}
+    closeModal(); getCurrentSubj().data=state; saveSubjects(); renderHR(); return;
+  } else if(t==='pag'){
+    const punId = parseInt(document.getElementById('f-pun')?.value)||0;
+    const muaji = g('f-muaj');
+    const bruto = parseFloat(g('f-paga'))||0;
+    state.pagat.push({id:Date.now(),muaji,punonjesiId:punId,pagaBruto:bruto,status:g('f-sts')});
+    closeModal(); getCurrentSubj().data=state; saveSubjects(); renderHR(); renderBilanci(); return;
+  }
+  // fallthrough to original
+  const t2=document._saveType;
+  const sas=parseFloat(g('f-sas'))||0,min=parseFloat(g('f-min'))||0;
+  if(t2==='mat'){
+    const status=sas===0?'Stok Kritik':sas<min?'Stok Kritik':sas<min*1.5?'Stok i Ulët':'Stok Normal';
+    const item={emri:g('f-emri'),kategori:g('f-kat'),njesia:g('f-nje'),sasia:sas,min,
+      cmBlerje:parseFloat(g('f-cmb'))||0,cmShitje:parseFloat(g('f-cms'))||0,furnitori:g('f-fur'),status};
+    if(editingId){const i=state.materiale.findIndex(m=>m.id===editingId);item.id=editingId;state.materiale[i]=item;}
+    else{item.id=Date.now();state.materiale.push(item);}
+  } else if(t2==='paj'){
+    const item={emri:g('f-emri'),kategori:g('f-kat'),seria:g('f-ser'),gjendja:g('f-gje'),
+      vlera:parseFloat(g('f-vlr'))||0,mirembajtja:g('f-mir')||'—',lokacioni:g('f-lok'),status:g('f-sts')};
+    if(editingId){const i=state.pajisje.findIndex(p=>p.id===editingId);item.id=editingId;state.pajisje[i]=item;}
+    else{item.id=Date.now();state.pajisje.push(item);}
+  } else if(t2==='sh'){
+    const cm=parseFloat(g('f-cmu'))||0;
+    state.shitje.push({id:Date.now(),data:g('f-dat'),artikull:g('f-art'),lloji:g('f-llj'),
+      sasia:sas,cmUnit:cm,total:sas*cm,klienti:g('f-kli')});
+  } else if(t2==='fur'){
+    const item={emri:g('f-emri'),nid:g('f-nid'),kontakti:g('f-kon'),adresa:g('f-adr'),
+      materialet:g('f-mat'),afati:g('f-afa'),status:'Aktiv'};
+    if(editingId){const i=state.furnitoret.findIndex(f=>f.id===editingId);item.id=editingId;state.furnitoret[i]=item;}
+    else{item.id=Date.now();state.furnitoret.push(item);}
+  } else if(t2==='shp'){
+    const vlera=parseFloat(g('f-vlr'))||0;
+    const tvsh=g('f-tvsh')==='true';
+    const item={pershkrimi:g('f-emri'),kategoria:g('f-kat'),data:g('f-dat'),vlera,tvsh};
+    if(editingId){const i=state.shpenzime.findIndex(s=>s.id===editingId);item.id=editingId;state.shpenzime[i]=item;}
+    else{item.id=Date.now();state.shpenzime.push(item);}
+  }
+  closeModal();
+  getCurrentSubj().data=state; saveSubjects(); render();
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg, icon='✅'){
+  const old = document.getElementById('toast-el');
+  if(old) old.remove();
+  const t = document.createElement('div');
+  t.id='toast-el';
+  t.className='toast';
+  t.innerHTML=`<span>${icon}</span><span>${msg}</span>`;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.4s';setTimeout(()=>t.remove(),400);},2800);
+}
+
+// ═══════════════════════════════════════════════
+// BACKUP & RESTORE
+// ═══════════════════════════════════════════════
+
+// Auto-save indicator
+function setBackupStatus(saving){
+  const el = document.getElementById('backup-status');
+  if(!el) return;
+  if(saving){
+    el.textContent='💾 Duke ruajtur...';
+    el.className='backup-status saving';
+  } else {
+    const now = new Date();
+    const time = now.toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit'});
+    el.textContent=`✅ Ruajtur ${time}`;
+    el.className='backup-status';
+  }
+}
+
+// Override saveSubjects to show indicator
+const _origSaveSubjects = saveSubjects;
+function saveSubjectsWithIndicator(){
+  setBackupStatus(true);
+  _origSaveSubjects();
+  setTimeout(()=>setBackupStatus(false), 600);
+}
+
+// Patch all save calls to use indicator version
+function saveSubjects(){
+  try{
+    localStorage.setItem('bt_subjects', JSON.stringify(subjects));
+    setTimeout(()=>setBackupStatus(false), 600);
+  }catch(e){
+    showToast('Gabim gjatë ruajtjes!','❌');
+  }
+}
+
+// Export ALL subjects as JSON file
+function exportBackup(){
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const timeStr = now.toTimeString().slice(0,5).replace(':','-');
+  const payload = {
+    version: 1,
+    exported: now.toISOString(),
+    app: 'BuildTrack',
+    subjects: subjects
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `buildtrack_backup_${dateStr}_${timeStr}.json`;
+  a.click();
+  showToast('Backup u shkarkua me sukses! 🎉','📤');
+}
+
+// Export only current subject
+function exportCurrentSubject(){
+  const subj = getCurrentSubj();
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const safeName = subj.emri.replace(/[^a-zA-Z0-9_]/g,'_');
+  const payload = {
+    version: 1,
+    exported: now.toISOString(),
+    app: 'BuildTrack',
+    single_subject: true,
+    subject: subj
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `buildtrack_${safeName}_${dateStr}.json`;
+  a.click();
+  showToast(`"${subj.emri}" u shkarkua!`,'📋');
+}
+
+// Import backup from file
+function importBackup(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const payload = JSON.parse(e.target.result);
+      if(payload.app !== 'BuildTrack') throw new Error('Jo file BuildTrack');
+
+      if(payload.single_subject){
+        // Import single subject
+        const incoming = payload.subject;
+        const exists = subjects.find(s=>s.id===incoming.id);
+        if(exists){
+          if(!confirm(`Subjekti "${incoming.emri}" ekziston. E zëvendësojmë?`)) return;
+          const idx = subjects.findIndex(s=>s.id===incoming.id);
+          subjects[idx] = incoming;
+        } else {
+          if(subjects.length>=4){alert('Maksimumi 4 subjekte! Fshi njërin para importit.');return;}
+          subjects.push(incoming);
+        }
+        showToast(`"${incoming.emri}" u importua!`,'📥');
+      } else {
+        // Import all
+        if(!confirm(`Do të zëvendësohen TË GJITHA ${payload.subjects.length} subjektet. Vazhdo?`)) return;
+        subjects = payload.subjects;
+        currentSubjId = subjects[0].id;
+        saveCurrentSubjId(currentSubjId);
+        state = getCurrentSubj().data;
+        showToast(`${subjects.length} subjekte u importuan!`,'📥');
+      }
+
+      saveSubjects();
+      renderSubjectList();
+      updateSubjTopbar();
+      render();
+    } catch(err){
+      alert('Gabim: File i pavlefshëm ose i dëmtuar!\n'+err.message);
+    }
+    // reset input
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// INIT
+renderSubjectList();
+updateSubjTopbar();
+render();
+</script>
+</body>
+</html>
